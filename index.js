@@ -80,8 +80,10 @@ app.post("/webhook", async (req, res) => {
 
   } catch (error) {
     console.error("\n--- ERRO NA AUTOMAÇÃO ---");
-    console.error("Detalhes:", error.response ? error.response.data : error.message);
-    res.status(500).json({ success: false, error: "Erro ao processar a automação." });
+console.error("Tipo de erro:", error.message);
+console.error("Detalhes completos:", error.response ? error.response.data : "Sem resposta da API");
+console.error("Status:", error.response ? error.response.status : "N/A");
+
   }
 });
 
