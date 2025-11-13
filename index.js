@@ -26,26 +26,41 @@ app.post("/webhook", async (req, res) => {
   try {
     // --- PASSO 1: Criar o documento a partir do template ---
     console.log("Passo 1: Criando documento na D4Sign...");
-    const createDocResponse = await axios.post(
-      `https://sandbox.d4sign.com.br/api/v1/documents/${D4SIGN_COFFER_UUID}/makedocumentbytemplateword?tokenAPI=${D4SIGN_TOKEN}&cryptKey=${D4SIGN_CRYPT_KEY}`,
-      {
-        name_document: `Contrato - ${dealData.contact_name}`,
-        templates: {
-          [D4SIGN_TEMPLATE_ID]: {
-            NOME_CLIENTE: dealData.contact_name,
-            CPF_CNPJ: dealData.contact_doc,
-            NACIONALIDADE: dealData.contact_nacionalidade,
-            DATA_NASCIMENTO: dealData.contact_data_de_nascimento,
-            ENDERECO: dealData.contact_endereco,
-            EMAIL: dealData.contact_email,
-            VALOR: dealData.deal_value,
-            FIDELIDADE: dealData.deal_modalidade,
-            NOME_PLANO: dealData.deal_plano_de_assinatura,
-            TRIAL: dealData.deal_trial,
-          },
+    
+    // Preparar o payload
+    const payload = {
+      name_document: `Contrato - ${dealData.contact_name}`,
+      templates: {
+        [D4SIGN_TEMPLATE_ID]: {
+          NOME_CLIENTE: dealData.contact_name,
+          CPF_CNPJ: dealData.contact_doc,
+          NACIONALIDADE: dealData.contact_nacionalidade,
+          DATA_NASCIMENTO: dealData.contact_data_de_nascimento,
+          ENDERECO: dealData.contact_endereco,
+          EMAIL: dealData.contact_email,
+          VALOR: dealData.deal_value,
+          FIDELIDADE: dealData.deal_modalidade,
+          NOME_PLANO: dealData.deal_plano_de_assinatura,
+          TRIAL: dealData.deal_trial,
         },
-      }
-    );
+      },
+    };
+    
+    // URL da requisição
+    const url = `https://sandbox.d4sign.com.br/api/v1/documents/${D4SIGN_COFFER_UUID}/makedocumentbytemplateword?tokenAPI=${D4SIGN_TOKEN}&cryptKey=${D4SIGN_CRYPT_KEY}`;
+    
+    // LOG DETALHADO
+    console.log("\n=== DEBUG: Requisição para D4Sign ===");
+    console.log("URL:", url);
+    console.log("Payload:", JSON.stringify(payload, null, 2));
+    console.log("=====================================\n");
+    
+    const createDocResponse = await axios.post(url, payload);
+    
+    console.log("\n=== DEBUG: Resposta da D4Sign ===");
+    console.log("Status:", createDocResponse.status);
+    console.log("Data:", JSON.stringify(createDocResponse.data, null, 2));
+    console.log("=================================\n");
     
     const docUuid = createDocResponse.data.uuid;
     console.log(`Documento criado com sucesso! UUID: ${docUuid}`);
@@ -80,10 +95,18 @@ app.post("/webhook", async (req, res) => {
 
   } catch (error) {
     console.error("\n--- ERRO NA AUTOMAÇÃO ---");
-console.error("Tipo de erro:", error.message);
-console.error("Detalhes completos:", error.response ? error.response.data : "Sem resposta da API");
-console.error("Status:", error.response ? error.response.status : "N/A");
-
+    console.error("Tipo de erro:", error.message);
+    console.error("Detalhes completos:", error.response ? error.response.data : "Sem resposta da API");
+    console.error("Status:", error.response ? error.response.status : "N/A");
+    
+    // LOG EXTRA DO ERRO
+    if (error.response) {
+      console.error("\n=== DEBUG: Resposta de Erro ===");
+      console.error("Headers:", JSON.stringify(error.response.headers, null, 2));
+      console.error("===============================\n");
+    }
+    
+    res.status(500).json({ success: false, error: "Erro ao processar a automação." });
   }
 });
 
