@@ -47,7 +47,7 @@ app.post("/webhook", async (req, res) => {
       }
     );
     
-    const docUuid = createDocResponse.data.uuid_document;
+    const docUuid = createDocResponse.data.uuid;
     console.log(`Documento criado com sucesso! UUID: ${docUuid}`);
 
     // --- PASSO 2: Adicionar os signatários ---
